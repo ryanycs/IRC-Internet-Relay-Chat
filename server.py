@@ -136,12 +136,16 @@ class Server:
         """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((self.host, self.port))
+        print(f"Listening at {sock.getsockname()}")
         sock.listen()
 
         while True:
-            conn, addr = sock.accept()
+            try:
+                conn, addr = sock.accept()
 
-            # add client to list of connected clients
-            self.clients[addr] = {"conn": conn, "username": None}
-            # start a new thread to handle the client
-            threading.Thread(target=self.handle_client, args=(conn, addr)).start()
+                # add client to list of connected clients
+                self.clients[addr] = {"conn": conn, "username": None}
+                # start a new thread to handle the client
+                threading.Thread(target=self.handle_client, args=(conn, addr)).start()
+            except KeyboardInterrupt:
+                break
