@@ -2,7 +2,6 @@ import json
 import re
 import socket
 import threading
-import time
 
 
 class Client:
@@ -11,7 +10,11 @@ class Client:
         self.port = port
 
     def handle_recv(self, conn: socket.socket):
+        """
+        Handles receiving messages from the server
+        """
         while True:
+            # if the connection is closed, break the loop
             if conn.fileno() == -1:
                 break
 
@@ -20,11 +23,19 @@ class Client:
                 break
 
             data = json.loads(data.decode("utf-8"))
-            time, username, message = data["time"], data["username"], data["message"]
+            time, username, message = (
+                data.get("time", None),
+                data.get("username", None),
+                data.get("message", None),
+            )
             print("{} [ {:>12s} ] {}".format(time, username, message))
 
     def handle_send(self, conn: socket.socket):
+        """
+        Handles sending messages to the server
+        """
         while True:
+            # if the connection is closed, break the loop
             if conn.fileno() == -1:
                 break
 
@@ -41,5 +52,6 @@ class Client:
 
         print(f"Client has been assigned socket name {conn.getsockname()}")
 
+        # start two threads to handle sending and receiving data
         threading.Thread(target=self.handle_recv, args=(conn,)).start()
         threading.Thread(target=self.handle_send, args=(conn,)).start()

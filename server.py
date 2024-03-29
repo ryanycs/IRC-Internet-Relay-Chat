@@ -56,12 +56,12 @@ class Server:
                 tmpstr.append(
                     f"{self.clients[client]['username']}\t{client}\t['#public']"
                 )
-        message = "USER FROM CHANNEL\n" + "\n".join(tmpstr)
+        message = "\nUSER\tFROM\tCHANNEL\n" + "\n".join(tmpstr)
         conn.send(
             json.dumps(
                 {
                     "time": time.strftime("%H:%M:%S"),
-                    "username": "SERVER",
+                    "username": "-->",
                     "message": message,
                 }
             ).encode("utf-8")
@@ -106,6 +106,7 @@ class Server:
                 break
             data = json.loads(data.decode("utf-8"))
             message = data["message"]
+            print(f"from {addr}, msg = {message}")
 
             match_obj = re.match("/[A-Z]+", message)
             command = match_obj.group() if match_obj else None
