@@ -52,20 +52,13 @@ class Server:
         """
         tmpstr = []
         for client in self.clients:
+            # only show clients that have set a username
             if self.clients[client]["username"] is not None:
                 tmpstr.append(
                     f"{self.clients[client]['username']}\t{client}\t['#public']"
                 )
-        message = "\nUSER\tFROM\tCHANNEL\n" + "\n".join(tmpstr)
-        conn.send(
-            json.dumps(
-                {
-                    "time": time.strftime("%H:%M:%S"),
-                    "username": "-->",
-                    "message": message,
-                }
-            ).encode("utf-8")
-        )
+        message = "USER\tFROM\tCHANNEL\n" + "\n".join(tmpstr)
+        self.send_message(conn, None, message)
 
     def command_quit(self, conn: socket.socket, addr: tuple, message: str):
         """

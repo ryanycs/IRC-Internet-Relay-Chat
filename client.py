@@ -28,7 +28,11 @@ class Client:
                 data.get("username", None),
                 data.get("message", None),
             )
-            print("{} [ {:>12s} ] {}".format(time, username, message))
+            (
+                print("{} [ {:>12s} ] {}".format(time, username, message))
+                if username
+                else print("{} {}".format(time, message))
+            )
 
     def handle_send(self, conn: socket.socket):
         """
