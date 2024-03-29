@@ -25,10 +25,10 @@ class User:
 
 class Server:
     def __init__(self, host: str, port: int):
-        self.host = host
-        self.port = port
-        self.users = []
-        self.commands = {
+        self.host = host  # host the server listens at
+        self.port = port  # TCP port
+        self.users = []  # list of connected clients
+        self.commands = {  # commands that the server can execute
             "/USER": self.command_user,
             "/WHO": self.command_who,
             "/QUIT": self.command_quit,
@@ -49,12 +49,14 @@ class Server:
 
     def command_user(self, user: User, message: str):
         """
-        Extracts the username from the message and adds it to the list of clients
+        Sets the username of the client
+        user: User object
+        message: str
         """
-        # extract username from message
+        # extract username from message and set it
         username = re.match("^\/USER\s*(.*)", message).group(1)
-        # add user to list of users
         user.username = username
+
         # notify all connected clients that a new user has joined
         for client in self.users:
             self.send_message(
@@ -79,6 +81,7 @@ class Server:
         """
         Closes the connection with the client
         """
+        # extract quit message from message
         match_obj = re.match("/QUIT\s*(.*)", message)
         message = match_obj.group(1) if match_obj else None
 
@@ -115,20 +118,26 @@ class Server:
             data = user.conn.recv(1024)
             if not data:
                 break
+
             data = json.loads(data.decode("utf-8"))
             message = data["message"]
             print(f"from {user.addr}, msg = {message}")
 
+            # check if message is a command
             match_obj = re.match("/[A-Z]+", message)
             command = match_obj.group() if match_obj else None
+
             if command in self.commands.keys():
                 # execute command
                 self.commands[command](user, message)
             else:
+                # it's a normal message
+
                 # check if user has set a username
                 if user.username is None:
                     self.send_message(user.conn, "-->", "Please set a username first.")
                     continue
+
                 # broadcast message to all connected clients
                 for client in self.users:
                     if client != user:
@@ -138,6 +147,7 @@ class Server:
                             message,
                         )
 
+        # close connection
         print(f"Connection from {user.addr} closed")
         user.conn.close()
 
